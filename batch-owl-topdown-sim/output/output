@@ -1,0 +1,6 @@
+Mother	Son	0.60000	20
+Daughter	Parent	0.35000	0
+Son	Father	0.80000	0
+Son	Daughter	0.80000	0
+Daughter	BloodRelation	0.65000	1
+Female	Son	0.53334	0
