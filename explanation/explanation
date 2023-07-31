@@ -1,0 +1,18 @@
+The similarity between Mother and Son is 0.60000 because they have [Sex, Person, Thing] in common.
+	Mother = [Female Sex Person Thing], [isMotherOf]
+	Son = [Male Sex Person Thing], [hasParent]
+The similarity between Daughter and Parent is 0.35000 because they have [Person] in common.
+	Daughter = [Female Sex Person Thing], [hasParent]
+	Parent = [Person], [isParentOf]
+The similarity between Son and Father is 0.80000 because they have [Sex, Male, Person, Thing] in common.
+	Son = [Male Sex Person Thing], [hasParent]
+	Father = [Male Sex Person Thing], [isFatherOf]
+The similarity between Son and Daughter is 0.80000 because they have [Sex, Person, Thing] in common. Moreover, both of them also [hasParent].
+	Son = [Male Sex Person Thing], [hasParent]
+	Daughter = [Female Sex Person Thing], [hasParent]
+The similarity between Daughter and BloodRelation is 0.65000 because they have [Person] in common.
+	Daughter = [Female Sex Person Thing], [hasParent]
+	BloodRelation = [Person], [isBloodRelationOf]
+The similarity between Female and Son is 0.53334 because they have [Sex, Thing] in common.
+	Female = [Female Sex Thing]
+	Son = [Male Sex Person Thing], [hasParent]

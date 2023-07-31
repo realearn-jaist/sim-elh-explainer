@@ -1,0 +1,7 @@
+Concept 1	Concept 2		Similarity	Benchmark
+Female	Cousin	0.00000		8	0	2
+Female	ParentInLaw	0.00000		0	0	0
+Female	Man	0.58334		0	0	0
+Son	SonInLaw	0.97000		0	0	1
+Son	Female	0.53334		0	0	1
+Descendant	UncleInLaw	0.35000		0	0	0

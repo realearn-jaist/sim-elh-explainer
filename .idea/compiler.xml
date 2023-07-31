@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="core" />
+        <module name="batch-owl-dynamicprogramming-simpi" />
+        <module name="batch-krss-topdown-sim" />
+        <module name="batch-krss-topdown-simpi" />
+        <module name="batch-owl-topdown-simpi" />
+        <module name="batch-krss-dynamicprogramming-sim" />
+        <module name="batch-owl-topdown-sim" />
+        <module name="batch-owl-dynamicprogramming-sim" />
+        <module name="batch-krss-dynamicprogramming-simpi" />
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>
