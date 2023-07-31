@@ -123,6 +123,16 @@ public class SimilarityService {
     // Public //////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * runchana:2023-31-07
+     * Measure a similarity degree from given concepts with a specified concept and measurement types.
+     * @param conceptName1
+     * @param conceptName2
+     * @param type concept type, i.e., KRSS or OWL
+     * @param conceptType measurement type, i.e., dynamic/top down and sim/simpi
+     * @return similarity degree of that concept pair
+     * @throws IOException
+     */
     public BigDecimal measureConceptWithType(String conceptName1, String conceptName2, TypeConstant type, String conceptType) throws IOException {
         IConceptUnfolder conceptT = null;
 
