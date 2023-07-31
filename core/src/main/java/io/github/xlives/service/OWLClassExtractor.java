@@ -1,22 +1,25 @@
 package io.github.xlives.service;
 
-        import org.apache.commons.io.FileUtils;
-        import org.semanticweb.owlapi.apibinding.OWLManager;
-        import org.semanticweb.owlapi.model.*;
-        import org.semanticweb.owlapi.util.ShortFormProvider;
-        import org.semanticweb.owlapi.util.SimpleShortFormProvider;
+import org.apache.commons.io.FileUtils;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.util.ShortFormProvider;
+import org.semanticweb.owlapi.util.SimpleShortFormProvider;
+import java.io.File;
+import java.io.IOException;
 
-        import java.io.File;
-        import java.io.IOException;
-
-public class OWLClassExtractor {
+/**
+ * runchana:23-31-07
+ * The OWLClassExtractor class extracts every concept name that is listed in .owl file and appends them into a new file as initialized in 'OutputFile'.
+ * An input 'owlFilePath' should be .owl file.
+ */
+        public class OWLClassExtractor {
     public static void main(String[] args) throws IOException {
         String owlFilePath = "/Users/rchn/Desktop/refactor/sim-preference-elh/batch-owl-topdown-sim/input/output.owl";
         File OutputFile = new File("/Users/rchn/Desktop/refactor/sim-preference-elh/batch-owl-topdown-sim/output/outputpair");
 
         StringBuilder ResultOutput;
         ResultOutput = new StringBuilder();
-
 
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         OWLOntology ontology;
@@ -29,6 +32,7 @@ public class OWLClassExtractor {
 
         ShortFormProvider shortFormProvider = new SimpleShortFormProvider();
 
+        // To extract
         for (OWLClass owlClass1 : ontology.getClassesInSignature()) {
             String className1 = shortFormProvider.getShortForm(owlClass1);
 
