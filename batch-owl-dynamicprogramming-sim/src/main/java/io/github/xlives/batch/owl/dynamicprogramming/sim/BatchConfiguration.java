@@ -87,6 +87,8 @@ public class BatchConfiguration {
                 for (int i = 0; i < concept1sToMeasure.size(); i++) {
                     dynamicProgrammingSimResult.append(concept1sToMeasure.get(i)).append("\t");
                     dynamicProgrammingSimResult.append(concept2sToMeasure.get(i)).append("\t");
+
+                    // runchana:2023-31-07 invoke refactored method with new params to specify measurement and concept type
                     dynamicProgrammingSimResult.append(owlSimilarityController.measureSimilarity(concept1sToMeasure.get(i), concept2sToMeasure.get(i), TypeConstant.DYNAMIC_SIM, "OWL"));
                     dynamicProgrammingSimResult.append("\t");
 

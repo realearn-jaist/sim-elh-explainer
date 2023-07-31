@@ -112,6 +112,7 @@ public class BatchConfiguration {
                     topDownSimResult.append(concept2sToMeasure.get(i));
                     topDownSimResult.append("\t");
 
+                    // runchana:2023-31-07 invoke refactored method with new params to specify measurement and concept type
                     BigDecimal degree = krssSimilarityController.measureSimilarity(concept1sToMeasure.get(i), concept2sToMeasure.get(i), TypeConstant.TOPDOWN_SIM, "KRSS");
 
                     topDownSimResult.append(degree);

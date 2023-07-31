@@ -100,6 +100,8 @@ public class BatchConfiguration {
                     dynamicProgrammingSimPiResult.append("\t");
                     dynamicProgrammingSimPiResult.append(concept2sToMeasure.get(i));
                     dynamicProgrammingSimPiResult.append("\t");
+
+                    // runchana:2023-31-07 invoke refactored method with new params to specify measurement and concept type
                     dynamicProgrammingSimPiResult.append(krssSimilarityController.measureSimilarity(concept1sToMeasure.get(i), concept2sToMeasure.get(i), TypeConstant.DYNAMIC_SIMPI, "KRSS"));
 
                     List<String> benchmark = krssSimilarityController.getDynamicProgrammingSimPiExecutionMap().get(concept1sToMeasure.get(i) + " tree").get(concept2sToMeasure.get(i) + " tree");

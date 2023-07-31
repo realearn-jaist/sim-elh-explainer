@@ -90,6 +90,7 @@ public class BatchConfiguration {
                     dynamicProgrammingSimResult.append(concept2sToMeasure.get(i));
                     dynamicProgrammingSimResult.append("\t");
 
+                    // runchana:2023-31-07 invoke refactored method with new params to specify measurement and concept type
                     dynamicProgrammingSimResult.append(krssSimilarityController.measureSimilarity(concept1sToMeasure.get(i), concept2sToMeasure.get(i), TypeConstant.DYNAMIC_SIM, "KRSS"));
 
                     List<String> benchmark = krssSimilarityController.getDynamicProgrammingSimExecutionMap().get(concept1sToMeasure.get(i) + " tree").get(concept2sToMeasure.get(i) + " tree");

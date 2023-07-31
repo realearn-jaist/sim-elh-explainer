@@ -97,6 +97,8 @@ public class BatchConfiguration {
                     topDownSimPiResult.append("\t");
                     topDownSimPiResult.append(concept2sToMeasure.get(i));
                     topDownSimPiResult.append("\t");
+
+                    // runchana:2023-31-07 invoke refactored method with new params to specify measurement and concept type
                     topDownSimPiResult.append(owlSimilarityController.measureSimilarity(concept1sToMeasure.get(i), concept2sToMeasure.get(i), TypeConstant.TOPDOWN_SIMPI, "OWL"));
 
                     List<String> benchmark = owlSimilarityController.getTopDownSimPiExecutionMap().get(concept1sToMeasure.get(i) + " tree").get(concept2sToMeasure.get(i) + " tree");
