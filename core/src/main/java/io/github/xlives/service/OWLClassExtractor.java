@@ -39,9 +39,11 @@ import java.io.IOException;
             for (OWLClass owlClass2 : ontology.getClassesInSignature()) {
                 String className2 = shortFormProvider.getShortForm(owlClass2);
 
-                if (className1.equals(className2) || className1.compareTo(className2) >= 0) {
-                    continue; // Skip pairing if className1 is equal to or comes after className2 lexicographically
+                // runchana:2023-08-01 skip pairing if className1 is equal to or comes after className2 lexicographically/equal to thing
+                if (className1.equals(className2) || className1.compareTo(className2) >= 0 || className1.equals("Thing") || className2.equals("Thing")) {
+                    continue;
                 }
+
                 System.out.println(className1 + " " + className2);
                 ResultOutput.append(className1 + " " + className2);
                 ResultOutput.append("\n");
