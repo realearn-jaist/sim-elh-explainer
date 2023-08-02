@@ -20,7 +20,7 @@ import java.util.*;
 public class ExplanationService {
 
     private static StringBuilder explanation = new StringBuilder();
-    private File output_file = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/explanation/explanation");
+    private File output_file = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/explanation/explanation.txt");
     private File backtrace_file = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/explanation/backtracetable");
 
     public void explainSimilarity(BackTraceTable backTraceTable) throws IOException {
