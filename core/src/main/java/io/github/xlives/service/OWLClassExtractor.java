@@ -5,6 +5,11 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.ShortFormProvider;
 import org.semanticweb.owlapi.util.SimpleShortFormProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 
@@ -13,10 +18,20 @@ import java.io.IOException;
  * The OWLClassExtractor class extracts every concept name that is listed in .owl file and appends them into a new file as initialized in 'OutputFile'.
  * An input 'owlFilePath' should be .owl file.
  */
-        public class OWLClassExtractor {
-    public static void main(String[] args) throws IOException {
-        String owlFilePath = "/Users/rchn/Desktop/refactor/sim-preference-elh/batch-owl-topdown-sim/input/output.owl";
-        File OutputFile = new File("/Users/rchn/Desktop/refactor/sim-preference-elh/batch-owl-topdown-sim/output/outputpair");
+@Component("owlClassExtractor")
+public class OWLClassExtractor {
+
+    @Autowired
+    private Environment env;
+
+    @PostConstruct
+    public void extractAndWriteClasses() throws IOException {
+
+        // runchana:2023-09-16 Set file paths in application.properties
+        String owlFilePath = env.getProperty("owlFilePath");
+        String outputFilePath = env.getProperty("outputFilePath");
+
+        File OutputFile = new File(outputFilePath);
 
         StringBuilder ResultOutput;
         ResultOutput = new StringBuilder();
@@ -43,7 +58,6 @@ import java.io.IOException;
                 if (className1.equals(className2) || className1.compareTo(className2) >= 0 || className1.equals("Thing") || className2.equals("Thing")) {
                     continue;
                 }
-
                 System.out.println(className1 + " " + className2);
                 ResultOutput.append(className1 + " " + className2);
                 ResultOutput.append("\n");
