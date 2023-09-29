@@ -33,7 +33,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.util.*;
 
@@ -51,10 +53,13 @@ public class BatchConfiguration {
 
     private static final String HEADER_RESULT = "concept" + "\t" + "concept" + "\t" + "similarity" + "\t" + "millisecond" + "\t" + "millisecond" + "\t" + "millisecond";
 
-    private static final File INPUT_CONCEPTS = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-sim/input/input");
-    private static final File OUTPUT_DYNAMICPROGRAMMING_SIM = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-sim/output/output");
+    private static File INPUT_CONCEPTS = null;
+    private static File OUTPUT_DYNAMICPROGRAMMING_SIM = null;
 
-    private static final String PATH_KRSS_ONTOLOGY = "/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-sim/input/snomed.krss";
+    private static String PATH_KRSS_ONTOLOGY = null;
+
+    @Autowired
+    private Environment env ;
 
     @Autowired
     private JobBuilderFactory jobBuilderFactory;
@@ -69,6 +74,22 @@ public class BatchConfiguration {
     private List<String> concept1sToMeasure;
     private List<String> concept2sToMeasure;
     private StringBuilder dynamicProgrammingSimResult;
+
+    // runchana:2023-09-22 Configuration path using environment in application.properties
+    @PostConstruct
+    public void init() {
+        String inputConceptsPath = env.getProperty("inputConcepts.DynamicKRSS");
+        String outputDynamicPath = env.getProperty("output.DynamicKRSS");
+        String inputKRSSPath = env.getProperty("inputKRSS.DynamicKRSS");
+
+        if (inputConceptsPath != null && outputDynamicPath != null) {
+            INPUT_CONCEPTS = new File(inputConceptsPath);
+            OUTPUT_DYNAMICPROGRAMMING_SIM = new File(outputDynamicPath);
+            PATH_KRSS_ONTOLOGY = inputKRSSPath;
+        } else {
+            throw new IllegalStateException("Path is not properly configured.");
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tasks ///////////////////////////////////////////////////////////////////////////////////////////////////////////

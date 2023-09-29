@@ -33,7 +33,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -53,16 +55,18 @@ import java.util.Map;
 @SpringBootApplication
 public class BatchConfiguration {
 
-    private static final File INPUT_CONCEPTS = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-dynamicprogramming-simpi/input/input");
-    private static final File INPUT_PRIMITIVE_CONCEPT_IMPORTANCE = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-dynamicprogramming-simpi/input/preference-profile/primitive-concept-importance");
-    private static final File INPUT_ROLE_IMPORTANCE = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-dynamicprogramming-simpi/input/preference-profile/role-importance");
-    private static final File INPUT_PRIMITIVE_CONCEPTS_SIMILARITY = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-dynamicprogramming-simpi/input/preference-profile/primitive-concepts-similarity");
-    private static final File INPUT_PRIMITIVE_ROLES_SIMILARITY = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-dynamicprogramming-simpi/input/preference-profile/primitive-concepts-similarity");
-    private static final File INPUT_ROLE_DISCOUNT_FACTOR = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-dynamicprogramming-simpi/input/preference-profile/role-discount-factor");
+    private static File INPUT_CONCEPTS = null;
+    private static File INPUT_PRIMITIVE_CONCEPT_IMPORTANCE = null;
+    private static File INPUT_ROLE_IMPORTANCE = null;
+    private static File INPUT_PRIMITIVE_CONCEPTS_SIMILARITY = null;
+    private static File INPUT_PRIMITIVE_ROLES_SIMILARITY = null;
+    private static File INPUT_ROLE_DISCOUNT_FACTOR = null;
+    private static File OUTPUT_DYNAMICPROGRAMMING_SIMPI = null;
 
-    private static final File OUTPUT_DYNAMICPROGRAMMING_SIMPI = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-dynamicprogramming-simpi/output/output");
+    private static String PATH_OWL_ONTOLOGY = null;
 
-    private static final String PATH_OWL_ONTOLOGY = "/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-dynamicprogramming-simpi/input/family.owl";
+    @Autowired
+    private Environment env ;
 
     @Autowired
     private JobBuilderFactory jobBuilderFactory;
@@ -79,6 +83,41 @@ public class BatchConfiguration {
     private List<String> concept1sToMeasure;
     private List<String> concept2sToMeasure;
     private StringBuilder dynamicProgrammingSimPiResult;
+
+    // runchana:2023-09-22 configuration path using environment in application.properties
+    @PostConstruct
+    public void init() {
+        String inputConceptsPath = env.getProperty("inputConcepts.DynamicPi");
+        String outputDynamicPath = env.getProperty("output.DynamicPi");
+        String inputOntologyPath = env.getProperty("inputOntology.DynamicPi");
+
+        if (inputConceptsPath != null && outputDynamicPath != null && inputOntologyPath != null) {
+            INPUT_CONCEPTS = new File(inputConceptsPath);
+            OUTPUT_DYNAMICPROGRAMMING_SIMPI = new File(outputDynamicPath);
+            PATH_OWL_ONTOLOGY = inputOntologyPath;
+        } else {
+            throw new IllegalStateException("Path is not properly configured.");
+        }
+
+        // runchana:2023-09-22 preference profile in simPi
+        String inputPrimitiveConceptImportance_Path = env.getProperty("inputPrimitiveConceptImportance.DynamicPi");
+        String inputRoleImportance_Path = env.getProperty("inputRoleImportance.DynamicPi");
+        String inputPrimitiveConceptSimilarity_Path = env.getProperty("inputPrimitiveConceptSimilarity.DynamicPi");
+        String inputPrimitiveRolesSimilarity_Path = env.getProperty("inputPrimitiveRolesSimilarity.DynamicPi");
+        String inputRoleDiscountFactor_Path = env.getProperty("inputRoleDiscountFactor.DynamicPi");
+
+        if (inputPrimitiveConceptImportance_Path != null && inputRoleImportance_Path != null && inputPrimitiveConceptSimilarity_Path != null
+                && inputPrimitiveRolesSimilarity_Path != null && inputRoleDiscountFactor_Path != null) {
+            INPUT_PRIMITIVE_CONCEPT_IMPORTANCE = new File(inputPrimitiveConceptImportance_Path);
+            INPUT_ROLE_IMPORTANCE = new File(inputRoleImportance_Path);
+            INPUT_PRIMITIVE_CONCEPTS_SIMILARITY = new File(inputPrimitiveConceptSimilarity_Path);
+            INPUT_PRIMITIVE_ROLES_SIMILARITY = new File(inputPrimitiveRolesSimilarity_Path);
+            INPUT_ROLE_DISCOUNT_FACTOR = new File(inputRoleDiscountFactor_Path);
+        }  else {
+            throw new IllegalStateException("Preference profile path is not properly configured.");
+        }
+
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tasks ///////////////////////////////////////////////////////////////////////////////////////////////////////////
