@@ -16,19 +16,20 @@ import java.util.*;
  * The ExplanationService class's method will be invoked inside SimilarityService.
  * This class will be used for extracting similarity explanation from the BackTraceTable class that contains computation.
  */
+
 @Service
 public class ExplanationService {
 
-    private static StringBuilder explanation = new StringBuilder();
-    private File output_file = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/explanation/explanation.txt");
-    private File backtrace_file = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/explanation/backtracetable");
+    StringBuilder explanation = new StringBuilder();
 
     public void explainSimilarity(BackTraceTable backTraceTable) throws IOException {
 
-        if (output_file.exists() && backtrace_file.exists()) {
-            output_file.delete();
-            backtrace_file.delete();
-        }
+        // runchana:2023-09-22 Configuration path
+        String outputFilePath = "./explanation/explanation";
+        String backtraceFilePath = "./explanation/backtrace";
+
+        File output_file = new File(outputFilePath);
+        File backtrace_file = new File(backtraceFilePath);
 
         BigDecimal degree = null;
 
@@ -103,10 +104,10 @@ public class ExplanationService {
                     exiList.add(exiEach);
                 }
 
-                res.append("\t").append(key).append(" = ").append(Arrays.toString(priArr));
+                res.append("\t\t|--- ").append(key).append("\n\t\t\t|--- Concepts: ").append(Arrays.toString(priArr));
 
-                if(!exiEach.isEmpty()) {
-                    res.append(", ").append(exiEach);
+                if (!exiEach.isEmpty()){
+                    res.append("\n\t\t\t\t|--- Roles: ").append(exiEach);
                 }
 
                 res.append("\n");
@@ -121,17 +122,20 @@ public class ExplanationService {
             matchingCon.add("nothing");
         }
 
-        explanation.append("The similarity between ").append(conceptName1).append(" and ").append(conceptName2)
+        explanation.append(conceptName1).append("\t").append(conceptName2).append("\t").append(degree.setScale(5, BigDecimal.ROUND_HALF_UP)).append("\n");
+
+        // runchana:2023-10-12 explanation part with new format, using \t
+        explanation.append("\t").append("The similarity between ").append(conceptName1).append(" and ").append(conceptName2)
                 .append(" is ").append(degree.setScale(5, BigDecimal.ROUND_HALF_UP));
         explanation.append(" because they have ").append(matchingCon).append(" in common.");
 
         if (!matchingRole.isEmpty()) {
-            explanation.append(" Moreover, both of them also ").append(matchingRole).append(".");
+            explanation.append("\n\t").append(" Moreover, both of them also ").append(matchingRole).append(".");
         }
 
         explanation.append("\n").append(res);
 
-        FileUtils.writeStringToFile(backtrace_file, backTraceTable.getBackTraceTable().toString(), true);
+        FileUtils.writeStringToFile(backtrace_file, backTraceTable.getBackTraceTable().toString(), false);
         FileUtils.writeStringToFile(output_file, explanation.toString(), false);
     }
 
