@@ -83,5 +83,4 @@ public class BackTraceTable {
     public String[] getCnPair() {
         return cnPair;
     }
-
 }
