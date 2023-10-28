@@ -60,13 +60,13 @@ public class SimilarityService {
     private Map<String, Map<String, List<String>>> dynamicProgrammingSimPiExecutionMap = new HashMap<String, Map<String, List<String>>>();
 
     private ExplanationService explanationService = new ExplanationService();
-    private BackTraceTable backTraceTable = new BackTraceTable();
+    public BackTraceTable backTraceTable = new BackTraceTable();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Private /////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Tree<Set<String>> unfoldAndConstructTree(IConceptUnfolder iConceptUnfolder, String conceptName1) {
+    public Tree<Set<String>> unfoldAndConstructTree(IConceptUnfolder iConceptUnfolder, String conceptName1) {
         String unfoldConceptName1 = iConceptUnfolder.unfoldConceptDefinitionString(conceptName1);
 
         if (iConceptUnfolder instanceof ConceptDefinitionUnfolderManchesterSyntax) {

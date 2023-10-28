@@ -1,6 +1,7 @@
 package io.github.xlives.framework;
 
 import io.github.xlives.framework.descriptiontree.Tree;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.Set;
  * The value of the map is a hashmap of a concept name,
  * its primitive concepts and existential, along with homomorphism degree.
  */
+@Component
 public class BackTraceTable {
     private static Integer index = 0;
 
@@ -78,4 +80,7 @@ public class BackTraceTable {
         return backTraceTable;
     }
 
+    public String[] getCnPair() {
+        return cnPair;
+    }
 }
