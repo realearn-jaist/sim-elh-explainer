@@ -1,6 +1,5 @@
 package io.githib.xlives.batch.owl.topdown.sim;
 
-import io.github.xlives.controller.KRSSSimilarityController;
 import io.github.xlives.controller.OWLSimilarityController;
 import io.github.xlives.enumeration.TypeConstant;
 import io.github.xlives.framework.KRSSServiceContext;
@@ -33,13 +32,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Import(value= {OWLSimilarityController.class, ValidationService.class,
         TopDownSimReasonerImpl.class, TopDownSimPiReasonerImpl.class,
@@ -52,11 +50,28 @@ import java.util.Map;
 @EnableBatchProcessing
 @SpringBootApplication
 public class BatchConfiguration {
+    private static String PATH_OWL_ONTOLOGY =null;
+    private static File INPUT_CONCEPTS = null;
+    private static File OUTPUT_TOPDOWN_SIM = null;
 
-    private static final File INPUT_CONCEPTS = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-topdown-sim/input/input");
-    private static final File OUTPUT_TOPDOWN_SIM = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-topdown-sim/output/output");
+    @Autowired
+    private Environment env ;
 
-    private static final String PATH_OWL_ONTOLOGY = "/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-owl-topdown-sim/input/family.owl";
+    // runchana:2023-09-22 Configuration path using environment in application.properties
+    @PostConstruct
+    public void init() {
+        String inputConceptsPath = env.getProperty("inputConcepts.TopDownSim");
+        String outputTopDownPath = env.getProperty("output.TopDownSim");
+        String inputOntologyPath = env.getProperty("inputOntology.TopDownSim");
+
+        if (inputConceptsPath != null && outputTopDownPath != null) {
+            INPUT_CONCEPTS = new File(inputConceptsPath);
+            OUTPUT_TOPDOWN_SIM = new File(outputTopDownPath);
+            PATH_OWL_ONTOLOGY = inputOntologyPath;
+        } else {
+            throw new IllegalStateException("Path is not properly configured.");
+        }
+    }
 
     @Autowired
     private JobBuilderFactory jobBuilderFactory;
@@ -89,6 +104,7 @@ public class BatchConfiguration {
                     topDownSimResult.append("\t");
                     topDownSimResult.append(concept2sToMeasure.get(i));
                     topDownSimResult.append("\t");
+                    // runchana:2023-31-07 invoke refactored method with new params to specify measurement and concept type
                     topDownSimResult.append(owlSimilarityController.measureSimilarity(concept1sToMeasure.get(i), concept2sToMeasure.get(i), TypeConstant.TOPDOWN_SIM, "OWL"));
 
                     List<String> benchmark = owlSimilarityController.getTopDownSimExecutionMap().get(concept1sToMeasure.get(i) + " tree").get(concept2sToMeasure.get(i) + " tree");
@@ -196,6 +212,7 @@ public class BatchConfiguration {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static void main(String[] args) throws Exception {
+
         System.exit(SpringApplication
                 .exit(SpringApplication.run(BatchConfiguration.class, args)));
     }

@@ -60,13 +60,13 @@ public class SimilarityService {
     private Map<String, Map<String, List<String>>> dynamicProgrammingSimPiExecutionMap = new HashMap<String, Map<String, List<String>>>();
 
     private ExplanationService explanationService = new ExplanationService();
-    private BackTraceTable backTraceTable = new BackTraceTable();
+    public BackTraceTable backTraceTable = new BackTraceTable();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Private /////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Tree<Set<String>> unfoldAndConstructTree(IConceptUnfolder iConceptUnfolder, String conceptName1) {
+    public Tree<Set<String>> unfoldAndConstructTree(IConceptUnfolder iConceptUnfolder, String conceptName1) {
         String unfoldConceptName1 = iConceptUnfolder.unfoldConceptDefinitionString(conceptName1);
 
         if (iConceptUnfolder instanceof ConceptDefinitionUnfolderManchesterSyntax) {
@@ -123,66 +123,16 @@ public class SimilarityService {
     // Public //////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public BigDecimal measureOWLConceptsWithDynamicProgrammingSim(String conceptName1, String conceptName2) throws IOException {
-        if (conceptName1 == null || conceptName2 == null) {
-            throw new JSimPiException("Unable measure with dynamic programming Sim as conceptName1[" + conceptName1 + "] and " +
-                    "conceptName2[" + conceptName2 + "] are null.", ErrorCode.OWLSimService_IllegalArguments);
-        }
-
-        Tree<Set<String>> tree1 = unfoldAndConstructTree(conceptDefinitionUnfolderManchesterSyntax, conceptName1);
-        Tree<Set<String>> tree2 = unfoldAndConstructTree(conceptDefinitionUnfolderManchesterSyntax, conceptName2);
-
-        return computeSimilarity(dynamicProgrammingSimReasonerImpl, superRoleUnfolderManchesterSyntax, tree1, tree2);
-    }
-
-    public BigDecimal measureOWLConceptsWithDynamicProgrammingSimPi(String conceptName1, String conceptName2) throws IOException {
-        if (conceptName1 == null || conceptName2 == null) {
-            throw new JSimPiException("Unable measure with dynamic programming SimPi as conceptName1[" + conceptName1 + "] and " +
-                    "conceptName2[" + conceptName2 + "] are null.", ErrorCode.OWLSimService_IllegalArguments);
-        }
-
-        Tree<Set<String>> tree1 = unfoldAndConstructTree(conceptDefinitionUnfolderManchesterSyntax, conceptName1);
-        Tree<Set<String>> tree2 = unfoldAndConstructTree(conceptDefinitionUnfolderManchesterSyntax, conceptName2);
-
-        return computeSimilarity(dynamicProgrammingSimPiReasonerImpl, superRoleUnfolderManchesterSyntax, tree1, tree2);
-    }
-
-    public BigDecimal measureKRSSConcetpsWithTopDownSim(String conceptName1, String conceptName2) throws IOException {
-        if (conceptName1 == null || conceptName2 == null) {
-            throw new JSimPiException("Unable measure with top down Sim as conceptName1[" + conceptName1 + "] and " +
-                    "conceptName2[" + conceptName2 + "] are null.", ErrorCode.OWLSimService_IllegalArguments);
-        }
-
-        Tree<Set<String>> tree1 = unfoldAndConstructTree(conceptDefinitionUnfolderKRSSSyntax, conceptName1);
-        Tree<Set<String>> tree2 = unfoldAndConstructTree(conceptDefinitionUnfolderKRSSSyntax, conceptName2);
-
-        return computeSimilarity(topDownSimReasonerImpl, superRoleUnfolderKRSSSyntax, tree1, tree2);
-    }
-
-    public BigDecimal measureKRSSConceptsWithTopDownSimPi(String conceptName1, String conceptName2) throws IOException {
-        if (conceptName1 == null || conceptName2 == null) {
-            throw new JSimPiException("Unable measure with top down SimPi as conceptName1[" + conceptName1 + "] and " +
-                    "conceptName2[" + conceptName2 + "] are null.", ErrorCode.OWLSimService_IllegalArguments);
-        }
-
-        Tree<Set<String>> tree1 = unfoldAndConstructTree(conceptDefinitionUnfolderKRSSSyntax, conceptName1);
-        Tree<Set<String>> tree2 = unfoldAndConstructTree(conceptDefinitionUnfolderKRSSSyntax, conceptName2);
-
-        return computeSimilarity(topDownSimPiReasonerImpl, superRoleUnfolderKRSSSyntax, tree1, tree2);
-    }
-
-    public BigDecimal measureKRSSConceptsWithDynamicProgrammingSim(String conceptName1, String conceptName2) throws IOException {
-        if (conceptName1 == null || conceptName2 == null) {
-            throw new JSimPiException("Unable measure with dynamic programming Sim as conceptName1[" + conceptName1 + "] and " +
-                    "conceptName2[" + conceptName2 + "] are null.", ErrorCode.OWLSimService_IllegalArguments);
-        }
-
-        Tree<Set<String>> tree1 = unfoldAndConstructTree(conceptDefinitionUnfolderKRSSSyntax, conceptName1);
-        Tree<Set<String>> tree2 = unfoldAndConstructTree(conceptDefinitionUnfolderKRSSSyntax, conceptName2);
-
-        return computeSimilarity(dynamicProgrammingSimReasonerImpl, superRoleUnfolderKRSSSyntax, tree1, tree2);
-    }
-
+    /**
+     * runchana:2023-31-07
+     * Measure a similarity degree from given concepts with a specified concept and measurement types.
+     * @param conceptName1
+     * @param conceptName2
+     * @param type concept type, i.e., KRSS or OWL
+     * @param conceptType measurement type, i.e., dynamic/top down and sim/simpi
+     * @return similarity degree of that concept pair
+     * @throws IOException
+     */
     public BigDecimal measureConceptWithType(String conceptName1, String conceptName2, TypeConstant type, String conceptType) throws IOException {
         IConceptUnfolder conceptT = null;
 
@@ -220,11 +170,12 @@ public class SimilarityService {
 
         BigDecimal result = computeSimilarity(reasonerT, roleUnfolderT, tree1, tree2);
 
-        // extract explanation
+        // runchana:2023-31-07 store computation inside a backTraceTable class
         backTraceTable.inputConceptName(conceptName1, conceptName2);
         backTraceTable.inputTreeNodeValue(tree1, result, 1);
         backTraceTable.inputTreeNodeValue(tree2, result, 2);
 
+        // runchana:2023-31-07 extract explanation from the created backTraceTable object
         explanationService.explainSimilarity(backTraceTable);
 
         return result;

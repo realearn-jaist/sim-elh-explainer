@@ -32,7 +32,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -51,15 +53,18 @@ import java.util.List;
 
 public class BatchConfiguration {
 
-    private static final File INPUT_CONCEPTS = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-topdown-sim/input/input");
-    private static final File OUTPUT_TOPDOWN_SIM = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-topdown-sim/output/output");
+    private static File INPUT_CONCEPTS = null;
+    private static File OUTPUT_TOPDOWN_SIM = null;
 
-    private static final File OUTPUT_PLUS_FIVE_PERCENT_TOPDOWN_SIM = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-topdown-sim/output/output-plus-five-percent");
-    private static final File OUTPUT_MINUS_FIVE_PERCENT_TOPDOWN_SIM = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-topdown-sim/output/output-minus-five-percent");
+    private static File OUTPUT_PLUS_FIVE_PERCENT_TOPDOWN_SIM = null;
+    private static File OUTPUT_MINUS_FIVE_PERCENT_TOPDOWN_SIM = null;
 
-    private static final String PATH_KRSS_ONTOLOGY = "/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-topdown-sim/input/snomed.krss";
+    private static String PATH_KRSS_ONTOLOGY =null;
 
     private static final String HEADER_RESULT = "concept" + "\t" + "concept" + "\t" + "similarity" + "\t" + "millisecond";
+
+    @Autowired
+    private Environment env ;
 
     @Autowired
     private JobBuilderFactory jobBuilderFactory;
@@ -79,6 +84,27 @@ public class BatchConfiguration {
     // For conducting experiments only
     private StringBuilder topDownSimResultPlus5Percetage;
     private StringBuilder topDownSimResultMinus5Percatage;
+
+    // runchana:2023-09-22 Configuration path using environment in application.properties
+    @PostConstruct
+    public void init() {
+        String inputConceptsPath = env.getProperty("inputConcepts.TopDownSimKRSS");
+        String outputDynamicPath = env.getProperty("output.TopDownSimKRSS");
+        String inputKRSSPath = env.getProperty("inputKRSS.TopDownSim");
+        String outputPlusFivePercentTopDownSim = env.getProperty("outputPlusFivePercent.TopDownSim");
+        String outputMinusFivePercentTopDownSim = env.getProperty("outputMinusFivePercent.TopDownSim");
+
+        if (inputConceptsPath != null && outputDynamicPath != null) {
+            INPUT_CONCEPTS = new File(inputConceptsPath);
+            OUTPUT_TOPDOWN_SIM = new File(outputDynamicPath);
+            PATH_KRSS_ONTOLOGY = inputKRSSPath;
+            OUTPUT_PLUS_FIVE_PERCENT_TOPDOWN_SIM = new File(outputPlusFivePercentTopDownSim);
+            OUTPUT_MINUS_FIVE_PERCENT_TOPDOWN_SIM = new File(outputMinusFivePercentTopDownSim);
+        } else {
+            throw new IllegalStateException("Path is not properly configured.");
+        }
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tasks ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,6 +138,7 @@ public class BatchConfiguration {
                     topDownSimResult.append(concept2sToMeasure.get(i));
                     topDownSimResult.append("\t");
 
+                    // runchana:2023-31-07 invoke refactored method with new params to specify measurement and concept type
                     BigDecimal degree = krssSimilarityController.measureSimilarity(concept1sToMeasure.get(i), concept2sToMeasure.get(i), TypeConstant.TOPDOWN_SIM, "KRSS");
 
                     topDownSimResult.append(degree);

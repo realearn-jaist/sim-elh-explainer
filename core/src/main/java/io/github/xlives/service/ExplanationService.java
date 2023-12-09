@@ -11,20 +11,25 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
+/**
+ * runchana:2023-31-07
+ * The ExplanationService class's method will be invoked inside SimilarityService.
+ * This class will be used for extracting similarity explanation from the BackTraceTable class that contains computation.
+ */
+
 @Service
 public class ExplanationService {
 
-    private static StringBuilder explanation = new StringBuilder();
-
-    private File output_file = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/explanation/explanation");
-    private File backtrace_file = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/explanation/backtracetable");
+    StringBuilder explanation = new StringBuilder();
 
     public void explainSimilarity(BackTraceTable backTraceTable) throws IOException {
 
-        if (output_file.exists() && backtrace_file.exists()) {
-            output_file.delete();
-            backtrace_file.delete();
-        }
+        // runchana:2023-09-22 Configuration path
+        String outputFilePath = "./explanation/explanation";
+        String backtraceFilePath = "./explanation/backtrace";
+
+        File output_file = new File(outputFilePath);
+        File backtrace_file = new File(backtraceFilePath);
 
         BigDecimal degree = null;
 
@@ -36,13 +41,14 @@ public class ExplanationService {
         List<String[]> priList = new ArrayList<>();
         List<List<String>> exiList = new ArrayList<>();
 
-        // iterate through each value in backTraceTable
+        // runchana:2023-31-07 iterate through each value in backTraceTable
         Deque<Map.Entry<Map<Integer, String[]>, Map<String, Map<Tree<Set<String>>, BigDecimal>>>> lastTwoEntries = new LinkedList<>();
 
         for (Map.Entry<Map<Integer, String[]>, Map<String, Map<Tree<Set<String>>, BigDecimal>>> backtrace : backTraceTable.getBackTraceTable().entrySet()) {
 
             Map<Integer, String[]> keyMap = backtrace.getKey();
 
+            // runchana:2023-31-07 retrieve concept names from an outermost mapping key
             for (int i = 0; i < keyMap.size(); i++) {
                 String[] arrayValue = keyMap.get(i);
                 if (arrayValue != null) {
@@ -56,9 +62,10 @@ public class ExplanationService {
                 }
             }
 
+            // runchana:2023-31-07 keep only the last two from linkedHashMap to ensure that it's a new concept pair
             lastTwoEntries.add(backtrace);
             if (lastTwoEntries.size() > 2) {
-                lastTwoEntries.removeFirst(); // keep only the last two
+                lastTwoEntries.removeFirst();
             }
         }
 
@@ -66,7 +73,7 @@ public class ExplanationService {
 
             Map<String, Map<Tree<Set<String>>, BigDecimal>> valueMap = backtrace.getValue();
 
-            // retrieve primitives and degree along with its concept name
+            // runchana:2023-31-07 retrieve primitives and degree along with its concept name
             for (Map.Entry<String, Map<Tree<Set<String>>, BigDecimal>> entry : valueMap.entrySet()) {
                 String[] priArr = new String[1];
                 List<String> exiEach = new ArrayList<>();
@@ -76,7 +83,7 @@ public class ExplanationService {
 
                 for (Map.Entry<Tree<Set<String>>, BigDecimal> child : entry.getValue().entrySet()) {
 
-                    // existential
+                    // runchana:2023-31-07 find a set of existential in each concept name
                     for (Map.Entry<Integer, TreeNode<Set<String>>> tree : child.getKey().getNodes().entrySet()) {
                         exi = tree.getValue().getEdgeToParent();
 
@@ -85,25 +92,29 @@ public class ExplanationService {
                         }
                     }
 
+                    // runchana:2023-31-07 retrieve a homomorphism degree
                     degree = child.getValue();
 
+                    // runchana:2023-31-07 retrieve a primitive concept
                     priArr[0] = child.getKey().getNodes().get(0).toString();
+
                     removeUnwantedChar(priArr);
+
                     priList.add(priArr);
                     exiList.add(exiEach);
                 }
 
-                res.append("\t").append(key).append(" = ").append(Arrays.toString(priArr));
+                res.append("\t\t|--- ").append(key).append("\n\t\t\t|--- Concepts: ").append(Arrays.toString(priArr));
 
-                if(!exiEach.isEmpty()) {
-                    res.append(", ").append(exiEach);
+                if (!exiEach.isEmpty()){
+                    res.append("\n\t\t\t\t|--- Roles: ").append(exiEach);
                 }
 
                 res.append("\n");
             }
         }
 
-        // explanation details
+        // runchana:2023-31-07 find matched concepts and existential for explanation details
         Set<String> matchingCon = findMatchingConcept(priList);
         Set<String> matchingRole = findMatchingRole(exiList);
 
@@ -111,26 +122,42 @@ public class ExplanationService {
             matchingCon.add("nothing");
         }
 
-        explanation.append("The similarity between ").append(conceptName1).append(" and ").append(conceptName2)
+        explanation.append(conceptName1).append("\t").append(conceptName2).append("\t").append(degree.setScale(5, BigDecimal.ROUND_HALF_UP)).append("\n");
+
+        // runchana:2023-10-12 explanation part with new format, using \t
+        explanation.append("\t").append("The similarity between ").append(conceptName1).append(" and ").append(conceptName2)
                 .append(" is ").append(degree.setScale(5, BigDecimal.ROUND_HALF_UP));
         explanation.append(" because they have ").append(matchingCon).append(" in common.");
 
         if (!matchingRole.isEmpty()) {
-            explanation.append(" Moreover, both of them also ").append(matchingRole).append(".");
+            explanation.append("\n\t").append(" Moreover, both of them also ").append(matchingRole).append(".");
         }
 
         explanation.append("\n").append(res);
 
-        FileUtils.writeStringToFile(backtrace_file, backTraceTable.getBackTraceTable().toString(), true);
+        FileUtils.writeStringToFile(backtrace_file, backTraceTable.getBackTraceTable().toString(), false);
         FileUtils.writeStringToFile(output_file, explanation.toString(), false);
     }
 
+    /**
+     * runchana:2023-31-07
+     * Remove unwanted character (') that is usually appear in primitive concepts
+     * to make an explanation looks more natural in human terms.
+     * @param wordsArray array of primitive concepts
+     */
     private void removeUnwantedChar(String[] wordsArray) {
         for (int i = 0; i < wordsArray.length; i++) {
             wordsArray[i] = wordsArray[i].replaceAll("'", "");
         }
     }
 
+    /**
+     * runchana:2023-31-07
+     * Find matched primitive concepts from a concept pair
+     * so that its similarity degree is explainable in an understandable term.
+     * @param wordsList List of string[] that keeps primitive concepts of concept1 and concept2
+     * @return A set of string that contains matched primitive concepts
+     */
     private static Set<String> findMatchingConcept(List<String[]> wordsList) {
         Set<String> matchingWords = new HashSet<>();
 
@@ -161,6 +188,13 @@ public class ExplanationService {
         return matchingWords;
     }
 
+    /**
+     * runchana:2023-31-07
+     * Find matched roles (existential) from a concept pair
+     * so that its similarity degree is explainable in an understandable term.
+     * @param listOfLists List of List<String> that keeps existential of concept1 and concept2
+     * @return A set of string that contains matched existential
+     */
     public Set<String> findMatchingRole(List<List<String>> listOfLists) {
         Set<String> matchingStrings = new HashSet<>();
 

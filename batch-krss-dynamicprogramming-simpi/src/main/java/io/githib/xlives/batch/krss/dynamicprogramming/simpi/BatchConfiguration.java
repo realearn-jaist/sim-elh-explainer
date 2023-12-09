@@ -33,7 +33,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -55,16 +57,19 @@ public class BatchConfiguration {
 
     private static final String HEADER_RESULT = "concept" + "\t" + "concept" + "\t" + "similarity" + "\t" + "millisecond" + "\t" + "millisecond" + "\t" + "millisecond";
 
-    private static final File INPUT_CONCEPTS = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-simpi/input/input");
-    private static final File INPUT_PRIMITIVE_CONCEPT_IMPORTANCE = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-simpi/input/preference-profile/primitive-concept-importance");
-    private static final File INPUT_ROLE_IMPORTANCE = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-simpi/input/preference-profile/role-importance");
-    private static final File INPUT_PRIMITIVE_CONCEPTS_SIMILARITY = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-simpi/input/preference-profile/primitive-concepts-similarity");
-    private static final File INPUT_PRIMITIVE_ROLES_SIMILARITY = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-simpi/input/preference-profile/primitive-roles-similarity");
-    private static final File INPUT_ROLE_DISCOUNT_FACTOR = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-simpi/input/preference-profile/role-discount-factor");
+    private static File INPUT_CONCEPTS = null;
+    private static File INPUT_PRIMITIVE_CONCEPT_IMPORTANCE = null;
+    private static File INPUT_ROLE_IMPORTANCE = null;
+    private static File INPUT_PRIMITIVE_CONCEPTS_SIMILARITY = null;
+    private static File INPUT_PRIMITIVE_ROLES_SIMILARITY = null;
+    private static File INPUT_ROLE_DISCOUNT_FACTOR = null;
 
-    private static final File OUTPUT_DYNAMICPROGRAMMING_SIMPI = new File("/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-simpi/output/output");
+    private static File OUTPUT_DYNAMICPROGRAMMING_SIMPI = null;
 
-    private static final String PATH_KRSS_ONTOLOGY = "/Users/rchn/Desktop/refactor/sim-elh-explainer/batch-krss-dynamicprogramming-simpi/input/snomed.krss";
+    private static String PATH_KRSS_ONTOLOGY = null;
+
+    @Autowired
+    private Environment env ;
 
     @Autowired
     private JobBuilderFactory jobBuilderFactory;
@@ -82,6 +87,40 @@ public class BatchConfiguration {
     private List<String> concept2sToMeasure;
     private StringBuilder dynamicProgrammingSimPiResult;
 
+    // runchana:2023-09-22 configuration path using environment in application.properties
+    @PostConstruct
+    public void init() {
+        String inputConceptsPath = env.getProperty("inputConcepts.DynamicPiKRSS");
+        String outputDynamicPath = env.getProperty("output.DynamicPiKRSS");
+        String inputOntologyPath = env.getProperty("inputKRSS.DynamicPi");
+
+        if (inputConceptsPath != null && outputDynamicPath != null && inputOntologyPath != null) {
+            INPUT_CONCEPTS = new File(inputConceptsPath);
+            OUTPUT_DYNAMICPROGRAMMING_SIMPI = new File(outputDynamicPath);
+            PATH_KRSS_ONTOLOGY = inputOntologyPath;
+        } else {
+            throw new IllegalStateException("Path is not properly configured.");
+        }
+
+        // runchana:2023-09-22 preference profile in simPi
+        String inputPrimitiveConceptImportance_Path = env.getProperty("inputPrimitiveConceptImportance.DynamicPiKRSS");
+        String inputRoleImportance_Path = env.getProperty("inputRoleImportance.DynamicPiKRSS");
+        String inputPrimitiveConceptSimilarity_Path = env.getProperty("inputPrimitiveConceptSimilarity.DynamicPiKRSS");
+        String inputPrimitiveRolesSimilarity_Path = env.getProperty("inputPrimitiveRolesSimilarity.DynamicPiKRSS");
+        String inputRoleDiscountFactor_Path = env.getProperty("inputRoleDiscountFactor.DynamicPiKRSS");
+
+        if (inputPrimitiveConceptImportance_Path != null && inputRoleImportance_Path != null && inputPrimitiveConceptSimilarity_Path != null
+                && inputPrimitiveRolesSimilarity_Path != null && inputRoleDiscountFactor_Path != null) {
+            INPUT_PRIMITIVE_CONCEPT_IMPORTANCE = new File(inputPrimitiveConceptImportance_Path);
+            INPUT_ROLE_IMPORTANCE = new File(inputRoleImportance_Path);
+            INPUT_PRIMITIVE_CONCEPTS_SIMILARITY = new File(inputPrimitiveConceptSimilarity_Path);
+            INPUT_PRIMITIVE_ROLES_SIMILARITY = new File(inputPrimitiveRolesSimilarity_Path);
+            INPUT_ROLE_DISCOUNT_FACTOR = new File(inputRoleDiscountFactor_Path);
+        }  else {
+            throw new IllegalStateException("Preference profile path is not properly configured.");
+        }
+
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tasks ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +139,8 @@ public class BatchConfiguration {
                     dynamicProgrammingSimPiResult.append("\t");
                     dynamicProgrammingSimPiResult.append(concept2sToMeasure.get(i));
                     dynamicProgrammingSimPiResult.append("\t");
+
+                    // runchana:2023-31-07 invoke refactored method with new params to specify measurement and concept type
                     dynamicProgrammingSimPiResult.append(krssSimilarityController.measureSimilarity(concept1sToMeasure.get(i), concept2sToMeasure.get(i), TypeConstant.DYNAMIC_SIMPI, "KRSS"));
 
                     List<String> benchmark = krssSimilarityController.getDynamicProgrammingSimPiExecutionMap().get(concept1sToMeasure.get(i) + " tree").get(concept2sToMeasure.get(i) + " tree");
